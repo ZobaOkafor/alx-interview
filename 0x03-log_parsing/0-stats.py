@@ -11,6 +11,7 @@ def print_metrics(status_counts, total_size):
         if status_counts[code] != 0:
             print("{}: {:d}".format(code, status_counts[code]))
 
+
 status_codes = {"200": 0, "301": 0, "400": 0, "401": 0, "403": 0,
                 "404": 0, "405": 0, "500": 0}
 
@@ -27,13 +28,13 @@ try:
 
         try:
             total_size += int(log_parts[-1])
-        except:
+        except (ValueError, IndexError):
             pass
 
         try:
             if log_parts[-2] in status_codes:
                 status_codes[log_parts[-2]] += 1
-        except:
+        except IndexError:
             pass
     print_metrics(status_codes, total_size)
 
