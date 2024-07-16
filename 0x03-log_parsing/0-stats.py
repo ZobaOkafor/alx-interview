@@ -16,12 +16,14 @@ status_codes_count = {
 }
 line_count = 0
 
+
 def print_stats():
     """Prints the statistics"""
     print("File size: {}".format(total_size))
     for code in sorted(status_codes_count.keys()):
         if status_codes_count[code] > 0:
             print("{}: {}".format(code, status_codes_count[code]))
+
 
 def process_line(line):
     """Processes a single line of log"""
@@ -43,10 +45,12 @@ def process_line(line):
     except (ValueError, IndexError):
         return
 
+
 def signal_handler(sig, frame):
     """Handles the interrupt signal (CTRL + C)"""
     print_stats()
     sys.exit(0)
+
 
 # Register the signal handler
 signal.signal(signal.SIGINT, signal_handler)
