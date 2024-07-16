@@ -29,11 +29,17 @@ def process_line(line):
     """Processes a single line of log"""
     global total_size, line_count
     parts = line.split()
-    if len(parts) < 7:
+    if len(parts) < 9:
         return
     try:
+        ip = parts[0]
+        date = parts[3] + " " + parts[4]
+        request = parts[5] + " " + parts[6] + " " + parts[7]
         status_code = parts[-2]
         file_size = int(parts[-1])
+
+        if request != '"GET /projects/260 HTTP/1.1"':
+            return
 
         if status_code in status_codes_count:
             status_codes_count[status_code] += 1
