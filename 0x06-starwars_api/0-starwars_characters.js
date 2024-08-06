@@ -1,45 +1,53 @@
 #!/usr/bin/node
 
-const rp = require('request-promise');
+const request = require('request');
 
-const movieId = process.argv[2];
+const filmId = process.argv[2];
+const apiEndpoint = `https://swapi-api.hbtn.io/api/films/${filmId}`;
+let characterUrls = [];
+const characterNames = [];
 
-if (!movieId) {
-  console.error('Movie ID is required');
-  process.exit(1);
-}
+const fetchFilmData = async () => {
+  await new Promise(resolve => request(apiEndpoint, (error, response, data) => {
+    if (error || response.statusCode !== 200) {
+      console.error('Error: ', error, '| StatusCode: ', response.statusCode);
+    } else {
+      const filmData = JSON.parse(data);
+      characterUrls = filmData.characters;
+      resolve();
+    }
+  }));
+};
 
-const filmsUrl = `https://swapi.dev/api/films/${movieId}/`;
-
-/**
- * Fetch data from a URL and return parsed JSON.
- * @param {string} url - The URL to fetch data from.
- * @returns {Promise<Object>} - A promise that resolves to the parsed JSON data.
- */
-const fetchData = async (url) => {
-  try {
-    const data = await rp({ uri: url, json: true });
-    return data;
-  } catch (error) {
-    console.error('Error fetching data:', error.message);
-    process.exit(1);
+const fetchCharacterNames = async () => {
+  if (characterUrls.length > 0) {
+    for (const url of characterUrls) {
+      await new Promise(resolve => request(url, (error, response, data) => {
+        if (error || response.statusCode !== 200) {
+          console.error('Error: ', error, '| StatusCode: ', response.statusCode);
+        } else {
+          const characterData = JSON.parse(data);
+          characterNames.push(characterData.name);
+          resolve();
+        }
+      }));
+    }
+  } else {
+    console.error('Error: No character URLs found');
   }
 };
 
-const fetchCharacterNames = async (urls) => {
-  for (const url of urls) {
-    const character = await fetchData(url);
-    console.log(character.name);
-  }
+const printCharacterNames = async () => {
+  await fetchFilmData();
+  await fetchCharacterNames();
+
+  characterNames.forEach((name, index) => {
+    if (index === characterNames.length - 1) {
+      process.stdout.write(name);
+    } else {
+      process.stdout.write(name + '\n');
+    }
+  });
 };
 
-const fetchMovieData = async () => {
-  const movieData = await fetchData(filmsUrl);
-  if (!movieData.characters) {
-    console.error('No characters found in the movie data');
-    process.exit(1);
-  }
-  await fetchCharacterNames(movieData.characters);
-};
-
-fetchMovieData();
+printCharacterNames();
