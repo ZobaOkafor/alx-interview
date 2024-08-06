@@ -2,33 +2,54 @@
 
 const request = require('request');
 
-const filmId = process.argv[2] + '/';
-const apiBase = 'https://swapi-api.hbtn.io/api/films/';
+// Get the movie ID from command line arguments
+const movieId = process.argv[2];
 
-const fetchFilmCharacters = async () => {
-  try {
-    const filmUrl = apiBase + filmId;
-    const filmData = await new Promise((resolve, reject) => {
-      request(filmUrl, (error, response, body) => {
-        if (error) return reject(error);
-        resolve(JSON.parse(body));
-      });
-    });
+// Check if movieId is provided
+if (!movieId) {
+  console.error('Movie ID is required');
+  process.exit(1);
+}
 
-    const characterEndpoints = filmData.characters;
+// Star Wars API URL for films
+const filmsUrl = `https://swapi.dev/api/films/${movieId}/`;
 
-    for (const endpoint of characterEndpoints) {
-      const characterData = await new Promise((resolve, reject) => {
-        request(endpoint, (error, response, body) => {
-          if (error) return reject(error);
-          resolve(JSON.parse(body).name);
-        });
-      });
-      console.log(characterData);
-    }
-  } catch (error) {
-    console.error(error);
+// Fetch movie data
+request(filmsUrl, (error, response, body) => {
+  if (error) {
+    console.error('Error fetching movie data:', error);
+    process.exit(1);
   }
-};
 
-fetchFilmCharacters();
+  // Parse the JSON response
+  const movieData = JSON.parse(body);
+
+  // Check if movie data contains characters
+  if (!movieData.characters) {
+    console.error('No characters found in the movie data');
+    process.exit(1);
+  }
+
+  // Function to fetch character data and print the name
+  const fetchCharacter = (url, callback) => {
+    request(url, (error, response, body) => {
+      if (error) {
+        console.error('Error fetching character data:', error);
+        process.exit(1);
+      }
+      const characterData = JSON.parse(body);
+      console.log(characterData.name);
+      callback();
+    });
+  };
+
+  // Fetch and print each character
+  const fetchAllCharacters = (urls) => {
+    if (urls.length === 0) return;
+
+    const url = urls.shift();
+    fetchCharacter(url, () => fetchAllCharacters(urls));
+  };
+
+  fetchAllCharacters(movieData.characters);
+});
