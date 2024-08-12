@@ -8,3 +8,4 @@ This repository houses solution to ALX-SE tasks on interview prep questions.
 - 0x04-utf8_validation
 - 0x05-nqueens
 - 0x06-starwars_api
+- 0x07-rotate_2d_matrix
