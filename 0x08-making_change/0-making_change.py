@@ -21,24 +21,14 @@ def makeChange(coins, total):
     >>> makeChange([1256, 54, 48, 16, 102], 1453)
     -1
     """
-    if total <= 0:
-        return 0
-
-    # Sort coins in descending order to prioritize larger denominations
+    tmp = 0
     coins.sort(reverse=True)
 
-    # Initialize dp array
-    dp = [float('inf')] * (total + 1)
-    dp[0] = 0  # 0 coins are needed to make the total of 0
-
-    # Fill dp array with optimized steps
+    if total < 0:
+        return 0
     for coin in coins:
-        for i in range(coin, total + 1):
-            dp[i] = min(dp[i], dp[i - coin] + 1)
+        if total % coin <= total:
+            tmp += total // coin
+            total = total % coin
 
-            # Early termination if the exact total is reached with minimal coins
-            if dp[total] != float('inf'):
-                break
-
-    # If dp[total] is still infinity, no combination could meet the total
-    return dp[total] if dp[total] != float('inf') else -1
+    return tmp if total == 0 else -1
